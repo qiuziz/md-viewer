@@ -1,0 +1,25 @@
+{
+  "name": "md-viewer",
+  "version": "0.1.0",
+  "description": "浏览器扩展：打开 Markdown 文件时自动渲染为格式化预览",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "compile": "tsc --noEmit",
+    "zip": "wxt zip",
+    "postinstall": "wxt prepare"
+  },
+  "dependencies": {
+    "dompurify": "^3.4.16",
+    "markdown-it": "^15.0.2",
+    "markdown-it-task-lists": "^2.1.1"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.2.0",
+    "typescript": "^5.9.0",
+    "wxt": "^0.21.4"
+  }
+}
