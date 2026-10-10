@@ -1,10 +1,23 @@
-const MARKDOWN_PATH_EXTENSIONS = ['.md', '.markdown'];
+import { MARKDOWN_EXTENSIONS } from './matches';
 
-export function isMarkdownUrl(rawUrl: string): boolean {
+const SUPPORTED_PROTOCOLS = new Set(['file:', 'http:', 'https:']);
+
+export interface DetectedSource {
+  /** 页面原始文本（浏览器原生纯文本渲染的 <pre> 内容）。 */
+  source: string;
+  /** 浏览器渲染纯文本用的原生 <pre>，预览挂载后复用它作为「源码视图」。 */
+  rawPre: HTMLPreElement;
+}
+
+export function hasSupportedProtocol(): boolean {
+  return SUPPORTED_PROTOCOLS.has(location.protocol);
+}
+
+export function hasMarkdownExtension(rawUrl: string): boolean {
   try {
     const { pathname } = new URL(rawUrl);
     const lower = pathname.toLowerCase();
-    return MARKDOWN_PATH_EXTENSIONS.some((ext) => lower.endsWith(ext));
+    return MARKDOWN_EXTENSIONS.some((ext) => lower.endsWith(`.${ext}`));
   } catch {
     return false;
   }
@@ -15,24 +28,48 @@ export function isMarkdownContentType(contentType: string): boolean {
 }
 
 /**
- * 从纯文本渲染页提取原文。
- * Chrome / Edge / Firefox 会将 text/plain、text/markdown 文件渲染为 body 下的单个 <pre>。
+ * 浏览器对 text/plain、text/markdown 等文件使用单个 <pre> 渲染，
+ * 借此排除「URL 以 .md 结尾但实际返回 HTML」的页面。
  */
-function readPlainTextSource(): string | null {
-  const pre = document.body?.querySelector(':scope > pre');
+function readRawPre(): HTMLPreElement | null {
+  const pre = document.body?.querySelector<HTMLPreElement>(':scope > pre');
   if (!pre) {
     return null;
   }
-  const text = pre.textContent ?? '';
-  return text.trim() === '' ? null : text;
+  return (pre.textContent ?? '').trim() === '' ? null : pre;
 }
 
-export function detectMarkdownPage(): string | null {
-  const urlSaysMarkdown = isMarkdownUrl(location.href);
+export function hasRawPlainTextSource(): boolean {
+  return readRawPre() !== null;
+}
+
+/** 判断当前页面是否需要接管为 Markdown 预览，返回原文与原生 <pre>。 */
+export function detectMarkdownSource(): DetectedSource | null {
+  if (!hasSupportedProtocol()) {
+    return null;
+  }
+  const urlSaysMarkdown = hasMarkdownExtension(location.href);
   const typeSaysMarkdown = isMarkdownContentType(document.contentType || '');
   if (!urlSaysMarkdown && !typeSaysMarkdown) {
     return null;
   }
-  // 必须是浏览器原生纯文本渲染页（单个 <pre>），避免接管返回 HTML 的同名地址
-  return readPlainTextSource();
+  const rawPre = readRawPre();
+  if (!rawPre) {
+    return null;
+  }
+  return { source: rawPre.textContent ?? '', rawPre };
+}
+
+/**
+ * 供轻量 detector 使用：URL 没有 markdown 扩展名（渲染器不会被 manifest 匹配注入），
+ * 但响应内容类型是 markdown 的页面。
+ */
+export function isExtensionlessMarkdownPage(): boolean {
+  if (!hasSupportedProtocol()) {
+    return false;
+  }
+  if (hasMarkdownExtension(location.href)) {
+    return false;
+  }
+  return isMarkdownContentType(document.contentType || '');
 }

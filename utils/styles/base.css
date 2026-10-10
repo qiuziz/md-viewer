@@ -1,0 +1,751 @@
+/* 全部样式限定在 html.mdv-page 下，避免污染 content script 匹配到的其他页面 */
+
+html.mdv-page {
+  color-scheme: light;
+  --mdv-bg: #ffffff;
+  --mdv-bg-subtle: #f6f8fa;
+  --mdv-fg: #1f2328;
+  --mdv-fg-muted: #59636e;
+  --mdv-border: #d1d9e0;
+  --mdv-border-muted: #d8dee4;
+  --mdv-link: #0969da;
+  --mdv-code-bg: #f6f8fa;
+  --mdv-toolbar-bg: rgba(255, 255, 255, 0.9);
+  --mdv-sidebar-bg: #f6f8fa;
+  --mdv-hover-bg: rgba(31, 35, 40, 0.06);
+  --mdv-active-bg: #ddf4ff;
+  --mdv-active-fg: #0969da;
+  --mdv-blockquote-fg: #59636e;
+  --mdv-blockquote-border: #d1d9e0;
+  --mdv-mark-bg: #fff8c5;
+  --mdv-ins-fg: #1a7f37;
+  --mdv-note: #0969da;
+  --mdv-info: #0969da;
+  --mdv-tip: #1a7f37;
+  --mdv-success: #1a7f37;
+  --mdv-important: #8250df;
+  --mdv-warning: #9a6700;
+  --mdv-caution: #cf222e;
+  --mdv-danger: #cf222e;
+}
+
+html.mdv-page[data-mdv-theme='dark'] {
+  color-scheme: dark;
+  --mdv-bg: #0d1117;
+  --mdv-bg-subtle: #151b23;
+  --mdv-fg: #f0f6fc;
+  --mdv-fg-muted: #9198a1;
+  --mdv-border: #3d444d;
+  --mdv-border-muted: #2f353d;
+  --mdv-link: #4493f8;
+  --mdv-code-bg: #151b23;
+  --mdv-toolbar-bg: rgba(13, 17, 23, 0.9);
+  --mdv-sidebar-bg: #0f141b;
+  --mdv-hover-bg: rgba(240, 246, 252, 0.08);
+  --mdv-active-bg: rgba(56, 139, 253, 0.15);
+  --mdv-active-fg: #4493f8;
+  --mdv-blockquote-fg: #9198a1;
+  --mdv-blockquote-border: #3d444d;
+  --mdv-mark-bg: rgba(187, 128, 9, 0.4);
+  --mdv-ins-fg: #3fb950;
+  --mdv-note: #4493f8;
+  --mdv-info: #4493f8;
+  --mdv-tip: #3fb950;
+  --mdv-success: #3fb950;
+  --mdv-important: #ab7df8;
+  --mdv-warning: #d29922;
+  --mdv-caution: #f85149;
+  --mdv-danger: #f85149;
+}
+
+html.mdv-page,
+html.mdv-page body {
+  margin: 0;
+  padding: 0;
+  background: var(--mdv-bg);
+}
+
+html.mdv-page .mdv-app {
+  min-height: 100vh;
+  background: var(--mdv-bg);
+  color: var(--mdv-fg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial,
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- 工具栏 ---- */
+
+html.mdv-page .mdv-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--mdv-border);
+  background: var(--mdv-toolbar-bg);
+  backdrop-filter: blur(8px);
+}
+
+html.mdv-page .mdv-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+html.mdv-page .mdv-file-name {
+  overflow: hidden;
+  color: var(--mdv-fg-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html.mdv-page .mdv-toolbar-right {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+}
+
+html.mdv-page .mdv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mdv-fg-muted);
+  cursor: pointer;
+}
+
+html.mdv-page .mdv-btn:hover {
+  background: var(--mdv-hover-bg);
+  color: var(--mdv-fg);
+}
+
+html.mdv-page .mdv-btn:focus-visible {
+  border-color: var(--mdv-link);
+  outline: none;
+}
+
+html.mdv-page .mdv-btn[aria-pressed='true'] {
+  background: var(--mdv-active-bg);
+  color: var(--mdv-active-fg);
+}
+
+html.mdv-page .mdv-btn[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+html.mdv-page .mdv-btn svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+html.mdv-page .mdv-btn.is-spinning svg {
+  animation: mdv-spin 1s linear infinite;
+}
+
+@keyframes mdv-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- 布局：侧边栏 + 正文 ---- */
+
+html.mdv-page .mdv-layout {
+  display: flex;
+  align-items: flex-start;
+}
+
+html.mdv-page .mdv-sidebar {
+  position: sticky;
+  top: 44px;
+  z-index: 30;
+  display: flex;
+  flex: 0 0 280px;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 280px;
+  height: calc(100vh - 44px);
+  overflow-y: auto;
+  padding: 12px 8px 24px 12px;
+  border-right: 1px solid var(--mdv-border);
+  background: var(--mdv-sidebar-bg);
+}
+
+@media (min-width: 961px) {
+  html.mdv-page .mdv-app[data-sidebar='closed'] .mdv-sidebar {
+    display: none;
+  }
+}
+
+html.mdv-page .mdv-sidebar-title {
+  padding: 2px 8px 8px;
+  color: var(--mdv-fg-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+html.mdv-page .mdv-sidebar-empty {
+  padding: 4px 8px;
+  color: var(--mdv-fg-muted);
+  font-size: 13px;
+}
+
+html.mdv-page .mdv-outline-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+html.mdv-page .mdv-outline-list .mdv-outline-list {
+  padding-left: 12px;
+}
+
+html.mdv-page .mdv-outline-item > a {
+  display: block;
+  overflow: hidden;
+  padding: 3px 8px;
+  border-radius: 6px;
+  color: var(--mdv-fg-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html.mdv-page .mdv-outline-item > a:hover {
+  background: var(--mdv-hover-bg);
+  color: var(--mdv-fg);
+}
+
+html.mdv-page .mdv-outline-item.is-active > a {
+  background: var(--mdv-active-bg);
+  color: var(--mdv-active-fg);
+  font-weight: 600;
+}
+
+html.mdv-page .mdv-outline-item.mdv-outline-h1 > a {
+  color: var(--mdv-fg);
+  font-weight: 600;
+}
+
+html.mdv-page .mdv-backdrop {
+  display: none;
+}
+
+html.mdv-page .mdv-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+html.mdv-page .mdv-content,
+html.mdv-page .mdv-source {
+  box-sizing: border-box;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 32px 64px;
+}
+
+html.mdv-page .mdv-app[data-width='full'] .mdv-content,
+html.mdv-page .mdv-app[data-width='full'] .mdv-source {
+  max-width: none;
+}
+
+html.mdv-page .mdv-source {
+  margin: 0 auto;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+    monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+html.mdv-page .mdv-source[hidden],
+html.mdv-page .mdv-content[hidden] {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  html.mdv-page .mdv-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 60;
+    height: 100vh;
+    width: 300px;
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.25);
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  html.mdv-page .mdv-app[data-sidebar='open'] .mdv-sidebar {
+    transform: none;
+  }
+
+  html.mdv-page .mdv-app[data-sidebar='open'] .mdv-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    display: block;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  html.mdv-page .mdv-content,
+  html.mdv-page .mdv-source {
+    padding: 16px 16px 48px;
+  }
+}
+
+/* ---- Markdown 正文 ---- */
+
+html.mdv-page .mdv-markdown-body {
+  overflow-wrap: break-word;
+}
+
+html.mdv-page .mdv-markdown-body :is(h1, h2, h3, h4, h5, h6) {
+  margin: 24px 0 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  scroll-margin-top: 60px;
+}
+
+html.mdv-page .mdv-markdown-body h1 {
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--mdv-border);
+  font-size: 2em;
+}
+
+html.mdv-page .mdv-markdown-body h2 {
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--mdv-border);
+  font-size: 1.5em;
+}
+
+html.mdv-page .mdv-markdown-body h3 {
+  font-size: 1.25em;
+}
+
+html.mdv-page .mdv-markdown-body h4 {
+  font-size: 1em;
+}
+
+html.mdv-page .mdv-markdown-body h5 {
+  font-size: 0.875em;
+}
+
+html.mdv-page .mdv-markdown-body h6 {
+  color: var(--mdv-fg-muted);
+  font-size: 0.85em;
+}
+
+html.mdv-page .mdv-anchor {
+  margin-right: 0.2em;
+  color: var(--mdv-fg-muted);
+  font-weight: 400;
+  text-decoration: none;
+  opacity: 0;
+}
+
+html.mdv-page .mdv-markdown-body :is(h1, h2, h3, h4, h5, h6):hover .mdv-anchor {
+  opacity: 0.5;
+}
+
+html.mdv-page .mdv-anchor:hover {
+  color: var(--mdv-link);
+  opacity: 1;
+}
+
+html.mdv-page .mdv-markdown-body p,
+html.mdv-page .mdv-markdown-body ul,
+html.mdv-page .mdv-markdown-body ol,
+html.mdv-page .mdv-markdown-body blockquote,
+html.mdv-page .mdv-markdown-body table,
+html.mdv-page .mdv-markdown-body pre,
+html.mdv-page .mdv-markdown-body dl,
+html.mdv-page .mdv-markdown-body .mdv-toc {
+  margin: 0 0 16px;
+}
+
+html.mdv-page .mdv-markdown-body a {
+  color: var(--mdv-link);
+  text-decoration: none;
+}
+
+html.mdv-page .mdv-markdown-body a:hover {
+  text-decoration: underline;
+}
+
+html.mdv-page .mdv-markdown-body ul,
+html.mdv-page .mdv-markdown-body ol {
+  padding-left: 2em;
+}
+
+html.mdv-page .mdv-markdown-body li + li {
+  margin-top: 4px;
+}
+
+html.mdv-page .mdv-markdown-body li > ul,
+html.mdv-page .mdv-markdown-body li > ol {
+  margin: 4px 0 0;
+}
+
+html.mdv-page .mdv-markdown-body code {
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  background: var(--mdv-code-bg);
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+    monospace;
+  font-size: 85%;
+}
+
+html.mdv-page .mdv-markdown-body pre {
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--mdv-code-bg);
+  overflow: auto;
+}
+
+html.mdv-page .mdv-markdown-body pre code {
+  padding: 0;
+  background: transparent;
+  font-size: 100%;
+  white-space: pre;
+}
+
+html.mdv-page .mdv-markdown-body blockquote {
+  padding: 0 1em;
+  border-left: 4px solid var(--mdv-blockquote-border);
+  color: var(--mdv-blockquote-fg);
+}
+
+html.mdv-page .mdv-markdown-body blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+html.mdv-page .mdv-markdown-body table {
+  display: block;
+  max-width: 100%;
+  border-collapse: collapse;
+  overflow: auto;
+}
+
+html.mdv-page .mdv-markdown-body th,
+html.mdv-page .mdv-markdown-body td {
+  padding: 6px 13px;
+  border: 1px solid var(--mdv-border);
+}
+
+html.mdv-page .mdv-markdown-body th {
+  font-weight: 600;
+  background: var(--mdv-code-bg);
+}
+
+html.mdv-page .mdv-markdown-body tr:nth-child(2n) td {
+  background: var(--mdv-code-bg);
+}
+
+html.mdv-page .mdv-markdown-body img {
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: 4px;
+}
+
+html.mdv-page .mdv-markdown-body img.mdv-zoomable {
+  cursor: zoom-in;
+}
+
+html.mdv-page .mdv-markdown-body hr {
+  height: 0.25em;
+  margin: 24px 0;
+  border: 0;
+  background: var(--mdv-border);
+}
+
+html.mdv-page .mdv-markdown-body input[type='checkbox'] {
+  margin-right: 0.5em;
+  vertical-align: middle;
+}
+
+html.mdv-page .mdv-markdown-body li.task-list-item {
+  list-style: none;
+}
+
+html.mdv-page .mdv-markdown-body ul.contains-task-list {
+  padding-left: 1em;
+}
+
+/* 行内与扩展语法 */
+
+html.mdv-page .mdv-markdown-body mark {
+  padding: 0.1em 0.2em;
+  border-radius: 3px;
+  background: var(--mdv-mark-bg);
+  color: inherit;
+}
+
+html.mdv-page .mdv-markdown-body ins {
+  color: var(--mdv-ins-fg);
+  text-decoration: none;
+}
+
+html.mdv-page .mdv-markdown-body sub,
+html.mdv-page .mdv-markdown-body sup {
+  font-size: 75%;
+  line-height: 0;
+}
+
+html.mdv-page .mdv-markdown-body abbr[title] {
+  border-bottom: none;
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+html.mdv-page .mdv-markdown-body dt {
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+html.mdv-page .mdv-markdown-body dd {
+  margin: 4px 0 12px 24px;
+}
+
+/* 脚注 */
+
+html.mdv-page .mdv-markdown-body .footnote-ref a {
+  padding: 0 0.15em;
+  font-size: 85%;
+  text-decoration: none;
+}
+
+html.mdv-page .mdv-markdown-body .footnotes {
+  margin-top: 32px;
+  padding-top: 12px;
+  border-top: 1px solid var(--mdv-border);
+  color: var(--mdv-fg-muted);
+  font-size: 14px;
+}
+
+html.mdv-page .mdv-markdown-body .footnotes-sep {
+  display: none;
+}
+
+html.mdv-page .mdv-markdown-body .footnotes-list {
+  padding-left: 1.2em;
+}
+
+html.mdv-page .mdv-markdown-body .footnote-backref {
+  text-decoration: none;
+}
+
+/* [[toc]] 内联目录 */
+
+html.mdv-page .mdv-markdown-body .mdv-toc {
+  padding: 12px 16px;
+  border: 1px solid var(--mdv-border);
+  border-radius: 8px;
+  background: var(--mdv-bg-subtle);
+}
+
+html.mdv-page .mdv-markdown-body .mdv-toc::before {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--mdv-fg-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  content: '目录';
+}
+
+html.mdv-page .mdv-markdown-body .mdv-toc ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+html.mdv-page .mdv-markdown-body .mdv-toc ul ul {
+  padding-left: 16px;
+}
+
+html.mdv-page .mdv-markdown-body .mdv-toc li {
+  margin: 4px 0;
+}
+
+html.mdv-page .mdv-markdown-body .mdv-toc a {
+  text-decoration: none;
+}
+
+/* 提醒：> [!NOTE] 与 ::: note 容器 */
+
+html.mdv-page .mdv-markdown-body .markdown-alert,
+html.mdv-page .mdv-markdown-body .mdv-admonition {
+  --mdv-alert-color: var(--mdv-note);
+  padding: 8px 16px;
+  border-left: 4px solid var(--mdv-alert-color);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--mdv-alert-color) 10%, transparent);
+  color: var(--mdv-fg);
+}
+
+html.mdv-page .mdv-markdown-body .markdown-alert-title,
+html.mdv-page .mdv-markdown-body .mdv-admonition-title {
+  margin: 0 0 4px;
+  color: var(--mdv-alert-color);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+html.mdv-page .mdv-markdown-body :is(.markdown-alert, .mdv-admonition) > :last-child {
+  margin-bottom: 0;
+}
+
+html.mdv-page .mdv-markdown-body .markdown-alert-note,
+html.mdv-page .mdv-markdown-body .mdv-admonition-note {
+  --mdv-alert-color: var(--mdv-note);
+}
+
+html.mdv-page .mdv-markdown-body .markdown-alert-info,
+html.mdv-page .mdv-markdown-body .mdv-admonition-info {
+  --mdv-alert-color: var(--mdv-info);
+}
+
+html.mdv-page .mdv-markdown-body .markdown-alert-tip,
+html.mdv-page .mdv-markdown-body .mdv-admonition-tip,
+html.mdv-page .mdv-markdown-body .mdv-admonition-tips {
+  --mdv-alert-color: var(--mdv-tip);
+}
+
+html.mdv-page .mdv-markdown-body .markdown-alert-success,
+html.mdv-page .mdv-markdown-body .mdv-admonition-success {
+  --mdv-alert-color: var(--mdv-success);
+}
+
+html.mdv-page .mdv-markdown-body .markdown-alert-important {
+  --mdv-alert-color: var(--mdv-important);
+}
+
+html.mdv-page .mdv-markdown-body .markdown-alert-warning,
+html.mdv-page .mdv-markdown-body .mdv-admonition-warning {
+  --mdv-alert-color: var(--mdv-warning);
+}
+
+html.mdv-page .mdv-markdown-body .markdown-alert-caution,
+html.mdv-page .mdv-markdown-body .mdv-admonition-danger {
+  --mdv-alert-color: var(--mdv-caution);
+}
+
+/* 数学公式与图表 */
+
+html.mdv-page .mdv-markdown-body .katex-block,
+html.mdv-page .mdv-markdown-body .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0;
+}
+
+html.mdv-page .mdv-markdown-body .mdv-mermaid {
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+
+html.mdv-page .mdv-markdown-body .mdv-mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+html.mdv-page .mdv-markdown-body .mdv-mermaid.is-fallback {
+  display: block;
+}
+
+html.mdv-page .mdv-markdown-body .mdv-mermaid-error {
+  margin: 0 0 8px;
+  color: var(--mdv-caution);
+  font-size: 13px;
+}
+
+/* ---- 图片灯箱 ---- */
+
+html.mdv-page .mdv-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.72);
+  opacity: 0;
+  cursor: zoom-out;
+  transition: opacity 0.18s ease;
+}
+
+html.mdv-page .mdv-lightbox[hidden] {
+  display: none;
+}
+
+html.mdv-page .mdv-lightbox.is-open {
+  opacity: 1;
+}
+
+html.mdv-page .mdv-lightbox img {
+  max-width: 92vw;
+  max-height: 92vh;
+  border-radius: 4px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  transform: scale(0.96);
+  transition: transform 0.18s ease;
+}
+
+html.mdv-page .mdv-lightbox.is-open img {
+  transform: none;
+}
+
+/* ---- 轻提示 ---- */
+
+html.mdv-page .mdv-toast-host {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  z-index: 300;
+  max-width: 70vw;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(20, 22, 26, 0.88);
+  color: #fff;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 12px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+html.mdv-page .mdv-toast-host.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
